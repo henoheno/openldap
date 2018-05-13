@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 #  openssl_slappasswd -- OpenLDAP slappasswd(with pw-sha2)-compatible
-#                        hash generator only with openssl, sed, tail, sh
+#                        hash generator only with openssl, sed, tail, tr, sh
 #  ==========================================================
    Copyright='(C) 2018 henoheno@users.osdn.me'
    Homepage='https://ja.osdn.net/users/henoheno/'
@@ -20,7 +20,7 @@ ckname="` basename -- "$0" `"
 usage(){
   trace 'usage()' || return  # (DEBUG)
    warn "$ckname -- OpenLDAP slappasswd(with pw-sha2)-compatible"
-   warn '                  hash generator only with openssl, sed, tail, sh'
+   warn '                hash generator only with openssl, sed, tail, tr, sh'
   qwarn
   qwarn "Usage: $ckname [-h scheme] [-s secret]"
   qwarn '       [--salt salt] [-n]'
@@ -234,11 +234,14 @@ _openssl_slappasswd()
   secret="$2"
   salt="$3"
   file="$4"
-  hash=
   case "$scheme" in
     '{'[a-zA-Z0-9./_-][a-zA-Z0-9./_-]*'}'* )
       scheme="` echo "$1" | sed 's#^\({[a-zA-Z0-9./_-][a-zA-Z0-9./_-]*}\).*#\1#' | tr A-Z a-z | tr -d '{}' `"
-      hash="`   echo "$1" | sed  's#^{[a-zA-Z0-9./_-][a-zA-Z0-9./_-]*}##' `"
+      hash="`   echo "$1" | sed   's#^{[a-zA-Z0-9./_-][a-zA-Z0-9./_-]*}##' `"
+    ;;
+    * )
+      scheme="` echo "$1" | tr A-Z a-z `"
+      hash=
     ;;
   esac
   if [ 'x' != "x$__debug" ] ; then
